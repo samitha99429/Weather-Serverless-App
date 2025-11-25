@@ -14,10 +14,8 @@ const weather: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event)
   }
 
   try {
-
-
+    
     const apiKey = process.env.WEATHER_API_KEY;
-
 
     const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`);
 
@@ -28,7 +26,13 @@ const weather: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event)
       humidity: response.data.main.humidity
     });
 
-  } catch (error) {
+  } catch (error: any) {
+    if (error.response && error.response.status === 404) {
+      return formatJSONResponse({
+        message: `invalid city name: ${city}`
+      });
+    }
+
     return formatJSONResponse({
       message: "Error fetching weather details",
       error: error.message
